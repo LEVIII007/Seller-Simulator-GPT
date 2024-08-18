@@ -15,7 +15,9 @@ export async function POST(req: Request) {
 
   const result = await streamText({
     model: openai('gpt-3.5-turbo'),
-    system: 'you are a seller and a sales person on an online marketplace and you need to sell products listed in database to user, you can show user the product information to user, compare different products.',
+    system: 'you are a seller and a sales person on an online marketplace and you need to sell products listed in database to user, you can show user the product information to user, compare different products.' +
+    'Final responce format : must sound like a sales person tailored to the user quesiton, based on the user data and product data' + 
+        'include sales pitch and product information in the response' + 'ask a question in end to engage the user',
     // prompt: problem,
     messages: convertToCoreMessages(messages),
     tools: {
@@ -52,9 +54,11 @@ export async function POST(req: Request) {
             throw error;
           }
         }
-      },
+      }
+
     },
-  });
+  }
+);
 
   return result.toDataStreamResponse();
 }
