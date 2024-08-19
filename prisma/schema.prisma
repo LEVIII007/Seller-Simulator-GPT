@@ -24,8 +24,8 @@ model Product {
   brand                 String
   product_description   String
   top_seller            Boolean
-  description_embedding String   @default("[]")
-  category_embedding    String   @default("[]")
+  Category_embed        vector(768)
+  Description_embed     vector(768)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

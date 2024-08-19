@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@ai-sdk/openai": "^0.0.48",
+    "@google/generative-ai": "^0.17.0",
     "@prisma/client": "^5.18.0",
     "@radix-ui/react-slot": "^1.1.0",
     "ai": "^3.3.9",

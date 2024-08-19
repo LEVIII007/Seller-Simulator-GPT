@@ -16,7 +16,7 @@ export async function POST(req: Request) {
   console.log(messages);
 
   const result = await streamText({
-    model: openai('gpt-4-turbo'),
+    model: openai('gpt-3.5-turbo'),
     system: 'you are a seller and a sales person on an online marketplace and you need to sell products listed in database to user, you can show user the product information to user, compare different products.' +
     'Final responce format : must sound like a sales person tailored to the user quesiton, based on the user data and product data' + 
         'include sales pitch and product information in the response' + 'ask a question in end to engage the user',
@@ -30,8 +30,8 @@ export async function POST(req: Request) {
           if (!query) {
             throw new Error("Query parameter is required");
           }
-
           try {
+            console.log("getDataFromDatabase called!!!!!!!!!!!!!");
             const response = await fetch('http://127.0.0.1:5000/query', {
               method: 'POST',
               headers: {
@@ -71,8 +71,14 @@ export async function POST(req: Request) {
           matchThreshold: z.number().describe('The similarity threshold for matching.'),
           matchCnt: z.number().describe('The number of matches to return.'),
         }),
-        execute: async ({ prompt, matchThreshold, matchCnt }) => {
-          return await searchProductDescription(prompt, matchThreshold, matchCnt);
+        execute: async ({ prompt, matchThreshold, matchCnt }: { prompt: string; matchThreshold: number; matchCnt: number }): Promise<string> => {
+          try {
+            console.log("searchProductDescription called!!!!!!!!!!!!!");
+            const result = await searchProductDescription(prompt, matchThreshold, matchCnt);
+            return JSON.stringify(result);
+          } catch (error : any) {
+            return JSON.stringify({ error: error.message});
+          }
         },
       },
       searchProductCategory: {
@@ -82,10 +88,16 @@ export async function POST(req: Request) {
           matchThreshold: z.number().describe('The similarity threshold for matching.'),
           matchCnt: z.number().describe('The number of matches to return.'),
         }),
-        execute: async ({ prompt, matchThreshold, matchCnt }) => {
-          return await searchProductCategory(prompt, matchThreshold, matchCnt);
+        execute: async ({ prompt, matchThreshold, matchCnt }: { prompt: string; matchThreshold: number; matchCnt: number }): Promise<string> => {
+          try {
+            console.log("searchProductCategory called!!!!!!!!!!!!!");
+            const result = await searchProductCategory(prompt, matchThreshold, matchCnt);
+            return JSON.stringify(result);
+          } catch (error : any) {
+            return JSON.stringify({ error: error.message });
+          }
         },
-    },
+      },
   }
 }
 );

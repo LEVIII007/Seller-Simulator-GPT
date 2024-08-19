@@ -1,18 +1,25 @@
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const { Client } = require('pg');
+
 const pgEndpoint = {
     host: process.env.POSTGRES_HOST,
     port: process.env.POSTGRES_PORT,
     database: process.env.POSTGRES_DATABASE,
     user: process.env.POSTGRES_USER,
-    password: process.env.POSTGRES_PASSWORD
+    password: process.env.POSTGRES_PASSWORD,
+    ssl: {
+        rejectUnauthorized: false
+    }
 };
 
 // searchProductDescription.ts
 export async function searchProductDescription(prompt: string, matchThreshold: number, matchCnt: number): Promise<{ error: string; } | { name: any; description: any; price: any; discount: any; }[]> {
     try {
+        console.log("searchProductDescription called!!!!!!!!!!!!!");
         const googleai = new GoogleGenerativeAI(process.env.API_KEY).getGenerativeModel({ model: "text-embedding-004" });
+        console.log("googleai created!!!!!!!!!!!!!");
         const client = new Client(pgEndpoint);
+        console.log("client created!!!!!!!!!!!!!");
 
         await client.connect();
         console.log("Connected to Postgres");
@@ -28,8 +35,8 @@ export async function searchProductDescription(prompt: string, matchThreshold: n
         const embeddingStr = '[' + embedding.values + ']';
 
         const res = await client.query(
-            "SELECT product_name, product_description, retail_price, discounted_price, 1 - (description_embedding <=> $1) as similarity " +
-            "FROM Products WHERE 1 - (description_embedding <=> $1) > $2 ORDER BY description_embedding <=> $1 LIMIT $3",
+            "SELECT product_name, product_description, retail_price, discounted_price, 1 - (Description_embed <=> $1) as similarity " +
+            "FROM Products WHERE 1 - (Description_embed <=> $1) > $2 ORDER BY Description_embed <=> $1 LIMIT $3",
             [embeddingStr, matchThreshold, matchCnt]);
 
         let places = [];
@@ -57,8 +64,11 @@ export async function searchProductDescription(prompt: string, matchThreshold: n
 
 export async function searchProductCategory(prompt: string, matchThreshold: number, matchCnt: number): Promise<{ error: string; } | { name: any; description: any; price: any; discount: any; }[]> {
     try {
+        console.log("searchProductCategory called!!!!!!!!!!!!!");
         const googleai = new GoogleGenerativeAI(process.env.API_KEY).getGenerativeModel({ model: "text-embedding-004" });
+        console.log("googleai created!!!!!!!!!!!!!");
         const client = new Client(pgEndpoint);
+        console.log("client created!!!!!!!!!!!!!");
 
         await client.connect();
         console.log("Connected to Postgres");
@@ -74,8 +84,8 @@ export async function searchProductCategory(prompt: string, matchThreshold: numb
         const embeddingStr = '[' + embedding.values + ']';
 
         const res = await client.query(
-            "SELECT product_name, product_description, retail_price, discounted_price, 1 - (category_embedding <=> $1) as similarity " +
-            "FROM Products WHERE 1 - (category_embedding <=> $1) > $2 ORDER BY category_embedding <=> $1 LIMIT $3",
+            "SELECT product_name, product_description, retail_price, discounted_price, 1 - (Category_embed <=> $1) as similarity " +
+            "FROM Products WHERE 1 - (Category_embed <=> $1) > $2 ORDER BY Category_embed <=> $1 LIMIT $3",
             [embeddingStr, matchThreshold, matchCnt]);
 
         let places = [];

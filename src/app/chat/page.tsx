@@ -24,6 +24,7 @@ export default function Chat() {
       },
     });
 
+
   return (
     <div className="flex flex-col justify-between items-center bg-gray-200 h-[50rem]">
       <div className="flex flex-col justify-between items-center w-full">
