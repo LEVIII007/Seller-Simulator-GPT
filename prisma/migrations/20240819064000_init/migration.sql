@@ -1,18 +1,17 @@
 -- CreateTable
 CREATE TABLE "products" (
-    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "id" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
     "description" TEXT,
-    "price" REAL NOT NULL,
-    "discount" REAL DEFAULT 11,
+    "price" DOUBLE PRECISION NOT NULL,
+    "discount" DOUBLE PRECISION DEFAULT 11,
     "stock" INTEGER NOT NULL DEFAULT 5,
     "category" TEXT NOT NULL,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL
-);
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
 
--- CreateIndex
-CREATE UNIQUE INDEX "products_category_key" ON "products"("category");
+    CONSTRAINT "products_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateIndex
 CREATE INDEX "products_name_idx" ON "products"("name");
