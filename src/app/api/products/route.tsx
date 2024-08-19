@@ -1,48 +1,54 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/utils/prisma";
-interface Product {
-  name: string;
-  price: number;
-  category: string;
-}
+import { Prisma } from "@prisma/client";
+import { z } from "zod";
+
+// Define the Zod schema for Product
+const ProductSchema = z.object({
+  product_name: z.string(),
+  product_category_tree: z.string(),
+  retail_price: z.number(),
+  discounted_price: z.number(),
+  product_description: z.string(),
+  brand: z.string(),
+  product_rating: z.number(),
+  overall_rating: z.number(),
+  top_seller: z.boolean(),
+});
+
+const ProductsArraySchema = z.array(ProductSchema);
 
 export async function POST(req: NextRequest, res: NextResponse) {
   try {
-    const body: Product[] = await req.json();
+    const body = await req.json();
 
-    // Validate the request body
-    if (!Array.isArray(body)) {
+    // Validate the request body using Zod
+    const parsedBody = ProductsArraySchema.safeParse(body);
+
+    if (!parsedBody.success) {
       return NextResponse.json(
-        { message: "Request body must be an array of products" },
+        { message: "Invalid request body", errors: parsedBody.error.errors },
         { status: 400 }
       );
     }
 
-    // Validate each product in the array
-    for (const product of body) {
-      if (!product.name || typeof product.name !== "string") {
-        return NextResponse.json(
-          { message: "Each product must have a valid 'name'" },
-          { status: 400 }
-        );
-      }
-      if (typeof product.price !== "number") {
-        return NextResponse.json(
-          { message: "Each product must have a valid 'price'" },
-          { status: 400 }
-        );
-      }
-      if (!product.category || typeof product.category !== "string") {
-        return NextResponse.json(
-          { message: "Each product must have a valid 'category'" },
-          { status: 400 }
-        );
-      }
-    }
+    // Transform the data to match Prisma's expected type
+    const productsToCreate: Prisma.ProductCreateManyInput[] =
+      parsedBody.data.map((product) => ({
+        product_name: product.product_name,
+        product_category_tree: product.product_category_tree,
+        retail_price: product.retail_price,
+        discounted_price: product.discounted_price,
+        product_description: product.product_description,
+        brand: product.brand,
+        product_rating: product.product_rating,
+        overall_rating: product.overall_rating,
+        top_seller: product.top_seller,
+      }));
 
     // Create products in the database
     const response = await prisma.product.createMany({
-      data: body,
+      data: productsToCreate,
     });
 
     return NextResponse.json(
