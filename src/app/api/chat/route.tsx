@@ -10,31 +10,6 @@ import {searchProductDescription, searchByProductName, searchtopsellers  } from 
 export const maxDuration = 60;
 
 
-// const { text: answer } = await generateText({
-//   model: openai('gpt-4-turbo'),
-//   system:
-//     'You are solving math problems. ' +
-//     'Reason step by step. ' +
-//     'Use the calculator when necessary. ' +
-//     'When you give the final answer, ' +
-//     'provide an explanation for how you arrived at it.',
-//   prompt: problem,
-//   tools: {
-//     calculate: tool({
-//       description:
-//         'A tool for evaluating mathematical expressions. ' +
-//         'Example expressions: ' +
-//         "'1.2 * (2 + 4.5)', '12.7 cm to inch', 'sin(45 deg) ^ 2'.",
-//       parameters: z.object({ expression: z.string() }),
-//       execute: async ({ expression }) => mathjs.evaluate(expression),
-//     }),
-//   },
-//   maxToolRoundtrips: 10,
-// });
-
-// console.log(`ANSWER: ${answer}`);
-
-
 export async function POST(req: Request) {
   const { messages } = await req.json();
   console.log(messages);
@@ -58,7 +33,7 @@ export async function POST(req: Request) {
           matchThreshold: z.number().describe('The similarity threshold for matching.'),
           matchCnt: z.number().describe('The number of matches to return.'),
         }),
-        execute: async ({ prompt, matchThreshold, matchCnt }: { prompt: string; matchThreshold: number; matchCnt: number }): Promise<string> => {
+        execute: async ({ prompt}: { prompt: string}): Promise<string> => {
           try {
             console.log("searchProductDescription called!!!!!!!!!!!!!");
             const result = await searchProductDescription(prompt);
@@ -114,6 +89,6 @@ export async function POST(req: Request) {
   }
 }
 );
-  console.log(result);
+  // console.log(result);
   return result.toDataStreamResponse();
 }

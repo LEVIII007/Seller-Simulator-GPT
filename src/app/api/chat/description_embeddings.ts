@@ -34,10 +34,15 @@ export async function searchProductDescription(prompt: string): Promise<{ error:
         }
         const embeddingStr = '[' + embedding.values + ']';
 
+        // const res = await client.query(
+        //     "SELECT name, description, original_price, offer_price, 1 - (description_embed <=> $1) as similarity " +
+        //     "FROM Products WHERE 1 - (description_embed <=> $1) > $2 ORDER BY description_embed <=> $1 LIMIT $3",
+        //     [embeddingStr, 0.4, 3]);
         const res = await client.query(
-            "SELECT name, description, price, offer_price, 1 - (description_embed <=> $1) as similarity " +
-            "FROM Products WHERE 1 - (description_embed <=> $1) > $2 ORDER BY description_embed <=> $1 LIMIT $3",
-            [embeddingStr, 0.4, 3]);
+            "SELECT name,description, original_price, offer_price, cosine_similarity(description_embed, $1) as similarity " +
+            "FROM Products WHERE cosine_similarity(description_embed, $1) > $2 ORDER BY similarity DESC LIMIT $3",
+            [embedding.values, 0.4, 3]);
+        console.log("res.rows: ", res.rows);
 
         let places = [];
 
@@ -47,7 +52,7 @@ export async function searchProductDescription(prompt: string): Promise<{ error:
             places.push({
                 name: row.name,
                 description: row.description,
-                price: row.price,
+                price: row.original_price,
                 discount: row.price
             });
 
@@ -83,14 +88,9 @@ export async function searchByProductName(prompt: string): Promise<{ error: stri
         }
         const embeddingStr = '[' + embedding.values + ']';
 
-        // const res = await client.query(
-        //     "SELECT name, description, price, offer_price, 1 - (name_embed <=> $1) as similarity " +
-        //     "FROM Products WHERE 1 - (name_embed <=> $1) > $2 ORDER BY name_embed <=> $1 LIMIT $3",
-        //     [embeddingStr, 0.5, 3]);
-
 
         const res = await client.query(
-            "SELECT name,description, price, offer_price, cosine_similarity(description_embed, $1) as similarity " +
+            "SELECT name,description, original_price, offer_price, cosine_similarity(description_embed, $1) as similarity " +
             "FROM Products WHERE cosine_similarity(description_embed, $1) > $2 ORDER BY similarity DESC LIMIT $3",
             [embedding.values, 0.5, 3]);
         console.log("res.rows: ", res.rows);
@@ -107,7 +107,7 @@ export async function searchByProductName(prompt: string): Promise<{ error: stri
             places.push({
                 name: row.name,
                 description: row.description,
-                price: row.price,
+                price: row.original_price,
                 discount: row.offer_price
             });
 
@@ -133,7 +133,7 @@ export async function searchtopsellers(category: string): Promise<{ error: strin
         console.log("Connected to Postgres");
 
         const res = await client.query(
-            "SELECT name, description, price, offer_price " +
+            "SELECT name, description, original_price, offer_price " +
             "FROM Products WHERE top_seller = true AND category = $1 " +
             "LIMIT $2",
             [category, 3]);
@@ -146,14 +146,18 @@ export async function searchtopsellers(category: string): Promise<{ error: strin
             answer.push({
                 name: row.name,
                 description: row.description,
-                price: row.price,
-                discount: row.price
+                price: row.original_price,
+                discount: row.offer_price
             });
 
         }
 
         await client.end();
         return answer;
+    }
+    catch (error) {
+        console.error("An error occurred:", error);
+        return { "error": "An unexpected error occurred" };
     }
 }
 
