@@ -4,9 +4,15 @@ import Image from "next/image";
 import { Mic, MicOff } from "lucide-react";
 import { useState } from "react";
 import MyComponent from "./_components/greeting";
+
+
 import { ToolInvocation } from "ai";
 import { Message, useChat } from "ai/react";
+
+
 import { SendHorizontal } from "lucide-react";
+
+
 export default function Chat() {
   const { messages, input, handleInputChange, handleSubmit, addToolResult } =
     useChat({
@@ -33,6 +39,52 @@ export default function Chat() {
           alt="Picture of the author"
         />
       )}
+
+    {messages?.map((m: Message) => (
+            <div key={m.id}>
+              <strong>{m.role}:</strong>
+              {m.content}
+              {m.toolInvocations?.map((toolInvocation: ToolInvocation) => {
+                const toolCallId = toolInvocation.toolCallId;
+                const addResult = (result: string) =>
+                  addToolResult({ toolCallId, result });
+
+                // render confirmation tool (client-side tool with user interaction)
+                if (toolInvocation.toolName === 'askForConfirmation') {
+                  return (
+                    <div key={toolCallId}>
+                      {toolInvocation.args.message}
+                      <div>
+                        {'result' in toolInvocation ? (
+                          <b>{toolInvocation.result}</b>
+                        ) : (
+                          <>
+                            <button onClick={() => addResult('Yes')}>Yes</button>
+                            <button onClick={() => addResult('No')}>No</button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  );
+                }
+
+                // other tools:
+                return 'result' in toolInvocation ? (
+                  <div key={toolCallId}>
+                    Tool call {`${toolInvocation.toolName}: `}
+                    {toolInvocation.result}
+                  </div>
+                ) : (
+                  <div key={toolCallId}>Calling {toolInvocation.toolName}...</div>
+                );
+              })}
+              <br />
+            </div>
+          ))}
+
+
+
+
       <form onSubmit={handleSubmit} className="p-5 m-5 w-full px-[28rem]">
         <div className="flex justify-between items-center gap-4 border border-white rounded-md px-3 py-1">
           {mic ? (

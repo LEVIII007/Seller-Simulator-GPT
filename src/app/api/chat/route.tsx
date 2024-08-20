@@ -74,7 +74,8 @@ export async function POST(req: Request) {
         execute: async ({ prompt, matchThreshold, matchCnt }: { prompt: string; matchThreshold: number; matchCnt: number }): Promise<string> => {
           try {
             console.log("searchProductDescription called!!!!!!!!!!!!!");
-            const result = await searchProductDescription(prompt, matchThreshold, matchCnt);
+            const result = await searchProductDescription(prompt);
+            console.log("searchProductDescription result: ", result);
             return JSON.stringify(result);
           } catch (error : any) {
             return JSON.stringify({ error: error.message});
@@ -91,7 +92,8 @@ export async function POST(req: Request) {
         execute: async ({ prompt, matchThreshold, matchCnt }: { prompt: string; matchThreshold: number; matchCnt: number }): Promise<string> => {
           try {
             console.log("searchProductCategory called!!!!!!!!!!!!!");
-            const result = await searchProductCategory(prompt, matchThreshold, matchCnt);
+            const result = await searchProductCategory(prompt);
+            console.log("searchProductCategory result: ", result);
             return JSON.stringify(result);
           } catch (error : any) {
             return JSON.stringify({ error: error.message });
