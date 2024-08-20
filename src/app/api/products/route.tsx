@@ -5,14 +5,14 @@ import { z } from "zod";
 
 // Define the Zod schema for Product
 const ProductSchema = z.object({
-  product_name: z.string(),
-  product_category_tree: z.string(),
-  retail_price: z.number(),
-  discounted_price: z.number(),
-  product_description: z.string(),
-  brand: z.string(),
-  product_rating: z.number(),
-  overall_rating: z.number(),
+  name: z.string(),
+  category: z.string(),
+  original_price: z.number(),
+  offer_price: z.number(),
+  rating: z.number(),
+  total_ratings: z.number(),
+  total_reviews: z.number(),
+  description: z.string(),
   top_seller: z.boolean(),
 });
 
@@ -34,17 +34,17 @@ export async function POST(req: NextRequest, res: NextResponse) {
 
     // Transform the data to match Prisma's expected type
     const productsToCreate: Prisma.ProductCreateManyInput[] =
-      parsedBody.data.map((product) => ({
-        product_name: product.product_name,
-        product_category_tree: product.product_category_tree,
-        retail_price: product.retail_price,
-        discounted_price: product.discounted_price,
-        product_description: product.product_description,
-        brand: product.brand,
-        product_rating: product.product_rating,
-        overall_rating: product.overall_rating,
-        top_seller: product.top_seller,
-      }));
+    parsedBody.data.map((product) => ({
+      name: product.name,
+      category: product.category,
+      original_price: product.original_price,
+      offer_price: product.offer_price,
+      description: product.description,
+      rating: product.rating,
+      total_ratings: product.total_ratings,
+      total_reviews: product.total_reviews,
+      top_seller: product.top_seller,
+    }));
 
     // Create products in the database
     const response = await prisma.product.createMany({
