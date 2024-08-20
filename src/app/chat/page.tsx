@@ -2,33 +2,44 @@
 import { Input } from "@/components/ui/input";
 import Image from "next/image";
 import { Mic, MicOff } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import MyComponent from "./_components/greeting";
 import { ToolInvocation } from "ai";
 import { Message, useChat } from "ai/react";
 import { SendHorizontal } from "lucide-react";
-export default function Chat() {
-  const { messages, input, handleInputChange, handleSubmit, addToolResult } =
-    useChat({
-      maxToolRoundtrips: 5,
+import useSpeechSynthesis from "@/components/speechSynthesis";
 
-      // run client-side tools that are automatically executed:
-      async onToolCall({ toolCall }) {
-        if (toolCall.toolName === "getLocation") {
-          const cities = [
-            "New York",
-            "Los Angeles",
-            "Chicago",
-            "San Francisco",
-          ];
-          return cities[Math.floor(Math.random() * cities.length)];
-        }
-      },
-    });
+export default function Chat() {
+  const { speak } = useSpeechSynthesis();
+  const { messages, input, handleInputChange, handleSubmit } = useChat({
+    maxToolRoundtrips: 5,
+
+    // run client-side tools that are automatically executed:
+    async onToolCall({ toolCall }) {
+      if (toolCall.toolName === "getLocation") {
+        const cities = ["New York", "Los Angeles", "Chicago", "San Francisco"];
+        return cities[Math.floor(Math.random() * cities.length)];
+      }
+    },
+  });
+
   const [mic, setMic] = useState(false);
+
+  const handleFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    handleSubmit();
+  };
+
+  useEffect(() => {
+    const lastMessage = messages[messages.length - 1];
+    if (lastMessage && lastMessage.role === "assistant") {
+      speak(lastMessage.content);
+    }
+  }, [messages]);
+
   return (
-    <div className="flex flex-col justify-between items-center  h-[55rem] pt-4">
-      <MyComponent></MyComponent>
+    <div className="flex flex-col justify-between items-center h-[55rem] pt-4">
+      <MyComponent />
       {mic ? (
         <Image
           src="/bot.jpeg"
@@ -46,7 +57,7 @@ export default function Chat() {
           alt="Picture of the author"
         />
       )}
-      <form onSubmit={handleSubmit} className="p-5 m-5 w-full px-[28rem]">
+      <form onSubmit={handleFormSubmit} className="p-5 m-5 w-full px-[28rem]">
         <div className="flex justify-between items-center gap-4 border border-white rounded-md px-3 py-1">
           {mic ? (
             <Mic
@@ -69,8 +80,8 @@ export default function Chat() {
           <SendHorizontal
             size={32}
             className="text-white rounded-full"
-            onClick={handleSubmit}
-          ></SendHorizontal>
+            onClick={handleFormSubmit}
+          />
         </div>
       </form>
     </div>
