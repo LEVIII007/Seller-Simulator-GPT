@@ -6,7 +6,7 @@ import { useState } from "react";
 import MyComponent from "./_components/greeting";
 import { ToolInvocation } from "ai";
 import { Message, useChat } from "ai/react";
-
+import { SendHorizontal } from "lucide-react";
 export default function Chat() {
   const { messages, input, handleInputChange, handleSubmit, addToolResult } =
     useChat({
@@ -14,7 +14,7 @@ export default function Chat() {
     });
   const [mic, setMic] = useState(false);
   return (
-    <div className="flex flex-col justify-between items-center  h-[50rem] pt-4">
+    <div className="flex flex-col justify-between items-center  h-[55rem] pt-4">
       <MyComponent></MyComponent>
       {mic ? (
         <Image
@@ -43,7 +43,7 @@ export default function Chat() {
             />
           ) : (
             <MicOff
-              size={24}
+              size={32}
               className="text-white rounded-full"
               onClick={() => setMic(true)}
             />
@@ -53,6 +53,11 @@ export default function Chat() {
             onChange={handleInputChange}
             className="w-full border-none focus:outline-none focus:ring-0 text-xl"
           />
+          <SendHorizontal
+            size={32}
+            className="text-white rounded-full"
+            onClick={handleSubmit}
+          ></SendHorizontal>
         </div>
       </form>
     </div>
