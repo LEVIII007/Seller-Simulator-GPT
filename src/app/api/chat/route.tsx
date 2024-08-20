@@ -4,7 +4,7 @@ import { z } from 'zod';
 import * as mathjs from 'mathjs';
 // import {generateText, tool } from 'ai';
 // import searchProductDescription from './description_embeddings';
-import { searchProductCategory, searchProductDescription } from './description_embeddings';
+import {searchProductDescription, searchByProductName, searchtopsellers  } from './description_embeddings';
 
 // Allow streaming responses up to 30 seconds
 export const maxDuration = 60;
@@ -41,12 +41,13 @@ export async function POST(req: Request) {
 
   const result = await streamText({
     model: openai('gpt-3.5-turbo'),
-    system: 'you are a seller and a sales person on an online Electronics marketplace which sells television, mobile phones, laptops, smart watches only and you need to sell products listed in database to user, you can show the product information to user, compare different products.' +
+    system: 'you are a sales person on an online Electronics marketplace which sells television, mobile phones, laptops, smart watches only and you need to sell products listed in database to user, you can show the product information to user, compare different products.' +
     'Final responce format : must sound like a sales person tailored to the user quesiton, based on the user data and product data' + 
     'if user asks for discounted price of a product, you can show the discounted price of the product' + 
     'if user asks to compare two products which you have suggested, compare laptops and mobile phones on basis of price, RAM, storage, camera quality' +
     'if user wants to negotiate on price, you can offer a 0-10% discount, to calculate the final price you can use calculateDiscount tool.' +
-        'include sales pitch and product information in the response' + 'ask a question in end to engage the user.',
+    "if user asks for top seller products of a category, use searchtopsellers tool to get the top seller products of the category." +
+    'include sales pitch and product information in the response' + 'ask a question in end to engage the user.',
     // prompt: problem,
     messages: convertToCoreMessages(messages),
     tools: {
@@ -78,8 +79,24 @@ export async function POST(req: Request) {
         execute: async ({ prompt, matchThreshold, matchCnt }: { prompt: string; matchThreshold: number; matchCnt: number }): Promise<string> => {
           try {
             console.log("searchProductCategory called!!!!!!!!!!!!!");
-            const result = await searchProductCategory(prompt);
+            const result = await searchByProductName(prompt);
             console.log("searchProductCategory result: ", result);
+            return JSON.stringify(result);
+          } catch (error : any) {
+            return JSON.stringify({ error: error.message });
+          }
+        },
+      },
+      gettop_sellers: {
+        description: 'Get top sellers of the products of : laptops, television, smartwatch, mobile based on the sales data.',
+        parameters: z.object({
+          prompt: z.string().describe('The prompt to search top_seller column of database. accepted values : laptop, television, mobile, smartwatch.'),
+        }),
+        execute: async ({ prompt}: { prompt: string}): Promise<string> => {
+          try {
+            console.log("gettop_sellers called!!!!!!!!!!!!!");
+            const result = await searchtopsellers(prompt);
+            console.log("gettop_sellers result: ", result);
             return JSON.stringify(result);
           } catch (error : any) {
             return JSON.stringify({ error: error.message });
