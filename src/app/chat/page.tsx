@@ -24,6 +24,7 @@ export default function Chat() {
   });
 
   const [mic, setMic] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
 
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,6 +34,7 @@ export default function Chat() {
   useEffect(() => {
     const lastMessage = messages[messages.length - 1];
     if (lastMessage && lastMessage.role === "assistant") {
+      setIsSpeaking(true);
       speak(lastMessage.content);
     }
   }, [messages]);
@@ -40,23 +42,15 @@ export default function Chat() {
   return (
     <div className="flex flex-col justify-between items-center h-[55rem] pt-4">
       <MyComponent />
-      {mic ? (
-        <Image
-          src="/bot.jpeg"
-          width={500}
-          height={500}
-          className="rounded-full p-4 m-4 shadow-xl shadow-white animate-flicker"
-          alt="Picture of the author"
-        />
-      ) : (
-        <Image
-          src="/bot.jpeg"
-          width={500}
-          height={500}
-          className="rounded-full p-4 m-4 shadow-xl"
-          alt="Picture of the author"
-        />
-      )}
+
+      <Image
+        src="/bot.jpeg"
+        width={500}
+        height={500}
+        className="rounded-full p-4 m-4 shadow-xl shadow-white animate-flicker"
+        alt="Picture of the author"
+      />
+
       <form onSubmit={handleFormSubmit} className="p-5 m-5 w-full px-[28rem]">
         <div className="flex justify-between items-center gap-4 border border-white rounded-md px-3 py-1">
           {mic ? (
