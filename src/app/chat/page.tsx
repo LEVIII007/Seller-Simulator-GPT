@@ -2,90 +2,56 @@
 import { Input } from "@/components/ui/input";
 import Image from "next/image";
 import { Mic, MicOff } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import MyComponent from "./_components/greeting";
-
-
 import { ToolInvocation } from "ai";
 import { Message, useChat } from "ai/react";
-
-
 import { SendHorizontal } from "lucide-react";
-
+import useSpeechSynthesis from "@/components/speechSynthesis";
 
 export default function Chat() {
-  const { messages, input, handleInputChange, handleSubmit, addToolResult } =
-    useChat({
-      maxToolRoundtrips: 10,
-    });
+  const { speak } = useSpeechSynthesis();
+  const { messages, input, handleInputChange, handleSubmit } = useChat({
+    maxToolRoundtrips: 5,
+
+    // run client-side tools that are automatically executed:
+    async onToolCall({ toolCall }) {
+      if (toolCall.toolName === "getLocation") {
+        const cities = ["New York", "Los Angeles", "Chicago", "San Francisco"];
+        return cities[Math.floor(Math.random() * cities.length)];
+      }
+    },
+  });
+
   const [mic, setMic] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+
+  const handleFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    handleSubmit();
+  };
+
+  useEffect(() => {
+    const lastMessage = messages[messages.length - 1];
+    if (lastMessage && lastMessage.role === "assistant") {
+      setIsSpeaking(true);
+      speak(lastMessage.content);
+    }
+  }, [messages]);
+
   return (
-    <div className="flex flex-col justify-between items-center  h-[55rem] pt-4">
-      <MyComponent></MyComponent>
-      {mic ? (
-        <Image
-          src="/bot.jpeg"
-          width={500}
-          height={500}
-          className="rounded-full p-4 m-4 shadow-xl shadow-white animate-flicker"
-          alt="Picture of the author"
-        />
-      ) : (
-        <Image
-          src="/bot.jpeg"
-          width={500}
-          height={500}
-          className="rounded-full p-4 m-4 shadow-xl"
-          alt="Picture of the author"
-        />
-      )}
+    <div className="flex flex-col justify-between items-center h-[55rem] pt-4">
+      <MyComponent />
 
-    {messages?.map((m: Message) => (
-            <div key={m.id}>
-              <strong>{m.role}:</strong>
-              {m.content}
-              {m.toolInvocations?.map((toolInvocation: ToolInvocation) => {
-                const toolCallId = toolInvocation.toolCallId;
-                const addResult = (result: string) =>
-                  addToolResult({ toolCallId, result });
+      <Image
+        src="/bot.jpeg"
+        width={500}
+        height={500}
+        className="rounded-full p-4 m-4 shadow-xl shadow-white animate-flicker"
+        alt="Picture of the author"
+      />
 
-                // render confirmation tool (client-side tool with user interaction)
-                if (toolInvocation.toolName === 'askForConfirmation') {
-                  return (
-                    <div key={toolCallId}>
-                      {toolInvocation.args.message}
-                      <div>
-                        {'result' in toolInvocation ? (
-                          <b>{toolInvocation.result}</b>
-                        ) : (
-                          <>
-                            <button onClick={() => addResult('Yes')}>Yes</button>
-                            <button onClick={() => addResult('No')}>No</button>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  );
-                }
-
-                // other tools:
-                return 'result' in toolInvocation ? (
-                  <div key={toolCallId}>
-                    Tool call {`${toolInvocation.toolName}: `}
-                    {toolInvocation.result}
-                  </div>
-                ) : (
-                  <div key={toolCallId}>Calling {toolInvocation.toolName}...</div>
-                );
-              })}
-              <br />
-            </div>
-          ))}
-
-
-
-
-      <form onSubmit={handleSubmit} className="p-5 m-5 w-full px-[28rem]">
+      <form onSubmit={handleFormSubmit} className="p-5 m-5 w-full px-[28rem]">
         <div className="flex justify-between items-center gap-4 border border-white rounded-md px-3 py-1">
           {mic ? (
             <Mic
@@ -108,8 +74,8 @@ export default function Chat() {
           <SendHorizontal
             size={32}
             className="text-white rounded-full"
-            onClick={handleSubmit}
-          ></SendHorizontal>
+            onClick={handleFormSubmit}
+          />
         </div>
       </form>
     </div>
