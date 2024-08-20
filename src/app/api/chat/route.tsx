@@ -4,7 +4,7 @@ import { z } from 'zod';
 import * as mathjs from 'mathjs';
 // import {generateText, tool } from 'ai';
 // import searchProductDescription from './description_embeddings';
-import { searchProductCategory, searchProductDescription } from './description_embeddings';
+import { searchByProductName, searchProductDescription } from './description_embeddings';
 
 // Allow streaming responses up to 30 seconds
 export const maxDuration = 60;
@@ -78,7 +78,7 @@ export async function POST(req: Request) {
         execute: async ({ prompt, matchThreshold, matchCnt }: { prompt: string; matchThreshold: number; matchCnt: number }): Promise<string> => {
           try {
             console.log("searchProductCategory called!!!!!!!!!!!!!");
-            const result = await searchProductCategory(prompt);
+            const result = await searchByProductName(prompt);
             console.log("searchProductCategory result: ", result);
             return JSON.stringify(result);
           } catch (error : any) {
