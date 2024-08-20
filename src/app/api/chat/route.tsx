@@ -1,6 +1,7 @@
 import { openai } from '@ai-sdk/openai';
 import { convertToCoreMessages, streamText } from 'ai';
 import { z } from 'zod';
+import * as mathjs from 'mathjs';
 // import {generateText, tool } from 'ai';
 // import searchProductDescription from './description_embeddings';
 import { searchProductCategory, searchProductDescription } from './description_embeddings';
@@ -9,6 +10,29 @@ import { searchProductCategory, searchProductDescription } from './description_e
 export const maxDuration = 60;
 
 
+// const { text: answer } = await generateText({
+//   model: openai('gpt-4-turbo'),
+//   system:
+//     'You are solving math problems. ' +
+//     'Reason step by step. ' +
+//     'Use the calculator when necessary. ' +
+//     'When you give the final answer, ' +
+//     'provide an explanation for how you arrived at it.',
+//   prompt: problem,
+//   tools: {
+//     calculate: tool({
+//       description:
+//         'A tool for evaluating mathematical expressions. ' +
+//         'Example expressions: ' +
+//         "'1.2 * (2 + 4.5)', '12.7 cm to inch', 'sin(45 deg) ^ 2'.",
+//       parameters: z.object({ expression: z.string() }),
+//       execute: async ({ expression }) => mathjs.evaluate(expression),
+//     }),
+//   },
+//   maxToolRoundtrips: 10,
+// });
+
+// console.log(`ANSWER: ${answer}`);
 
 
 export async function POST(req: Request) {
@@ -17,53 +41,15 @@ export async function POST(req: Request) {
 
   const result = await streamText({
     model: openai('gpt-3.5-turbo'),
-    system: 'you are a seller and a sales person on an online marketplace and you need to sell products listed in database to user, you can show user the product information to user, compare different products.' +
+    system: 'you are a seller and a sales person on an online Electronics marketplace which sells television, mobile phones, laptops, smart watches only and you need to sell products listed in database to user, you can show the product information to user, compare different products.' +
     'Final responce format : must sound like a sales person tailored to the user quesiton, based on the user data and product data' + 
-        'include sales pitch and product information in the response' + 'ask a question in end to engage the user',
+    'if user asks for discounted price of a product, you can show the discounted price of the product' + 
+    'if user asks to compare two products which you have suggested, compare laptops and mobile phones on basis of price, RAM, storage, camera quality' +
+    'if user wants to negotiate on price, you can offer a 0-10% discount, to calculate the final price you can use calculateDiscount tool.' +
+        'include sales pitch and product information in the response' + 'ask a question in end to engage the user.',
     // prompt: problem,
     messages: convertToCoreMessages(messages),
     tools: {
-    getDataFromDatabase : {
-        description : 'fetch data about any product or user from database given a very descriptive query in natural language, query needs to be very descriptive to get the correct data',
-        parameters : z.object({ query : z.string() }),
-        execute : async ({query} : { query : string }) => {
-          if (!query) {
-            throw new Error("Query parameter is required");
-          }
-          try {
-            console.log("getDataFromDatabase called!!!!!!!!!!!!!");
-            const response = await fetch('http://127.0.0.1:5000/query', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({ query })
-            });
-      
-            if (!response.ok) {
-              throw new Error(`API call failed with status ${response.status}`);
-            }
-      
-            const jsondata = await response.json();
-            const data = jsondata['data'];
-            if (!data || typeof data !== 'string') {
-              throw new Error("Invalid response from API");
-            }
-      
-            return data;
-          } catch (error) {
-            console.error("Error fetching data from database:", error);
-            throw error;
-          }
-        }
-      },
-      askForConfirmation: {
-        description: 'Ask the user for confirmation. This can be used to confirm an action before proceeding. after user confirm the action,give user some response',
-        parameters: z.object({
-          message: z.string().describe('The message to ask for confirmation.'),
-        }),
-      },
-      
       searchProductDescription: {
         description: 'Search for a product based on descriptions or specifications given by user based on a prompt.',
         parameters: z.object({
@@ -100,9 +86,17 @@ export async function POST(req: Request) {
           }
         },
       },
+      calculate:{
+        description:
+          'A tool for evaluating mathematical expressions. it can be used to calculate new discounted price of products.' +
+          'Example expressions: ' +
+          "'1.2 * (2 + 4.5)', '12.7 cm to inch', 'sin(45 deg) ^ 2'.",
+        parameters: z.object({ expression: z.string() }),
+        execute: async ({ expression }) => mathjs.evaluate(expression),
+      },
   }
 }
 );
-
+  console.log(result);
   return result.toDataStreamResponse();
 }

@@ -8,22 +8,22 @@ datasource db {
 }
 
 model Product {
-  id                    Int                    @id @default(autoincrement())
-  product_name          String
-  product_category_tree String
-  retail_price          Float
-  discounted_price      Float
-  product_rating        Float
-  overall_rating        Float
-  brand                 String
-  product_description   String
-  top_seller            Boolean
-  createdAt             DateTime               @default(now())
-  updatedAt             DateTime               @updatedAt
-  category_embed        Unsupported("vector")?
-  description_embed     Unsupported("vector")?
+  id                Int      @id @default(autoincrement())
+  name              String
+  category          String
+  original_price    Float
+  offer_price       Float
+  rating            Float
+  total_ratings     Int
+  total_reviews     Int
+  description       String
+  top_seller        Boolean
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  name_embed        Float[]
+  description_embed Float[]
 
-  @@index([product_name])
-  @@index([product_category_tree])
+  @@index([name])
+  @@index([category])
   @@map("products")
 }
