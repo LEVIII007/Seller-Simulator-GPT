@@ -35,7 +35,7 @@ export async function searchProductDescription(prompt: string): Promise<{ error:
         const embeddingStr = '[' + embedding.values + ']';
 
         const res = await client.query(
-            "SELECT product_name, product_description, retail_price, discounted_price, 1 - (description_embed <=> $1) as similarity " +
+            "SELECT name, description, price, offer_price, 1 - (description_embed <=> $1) as similarity " +
             "FROM Products WHERE 1 - (description_embed <=> $1) > $2 ORDER BY description_embed <=> $1 LIMIT $3",
             [embeddingStr, 0.4, 3]);
 
@@ -62,7 +62,7 @@ export async function searchProductDescription(prompt: string): Promise<{ error:
     }
 }
 
-export async function searchProductCategory(prompt: string): Promise<{ error: string; } | { name: any; description: any; price: any; discount: any; }[]> {
+export async function searchByProductName(prompt: string): Promise<{ error: string; } | { name: any; description: any; price: any; discount: any; }[]> {
     try {
         console.log("searchProductCategory called!!!!!!!!!!!!!");
         const googleai = new GoogleGenerativeAI(process.env.API_KEY).getGenerativeModel({ model: "text-embedding-004" });
@@ -84,8 +84,8 @@ export async function searchProductCategory(prompt: string): Promise<{ error: st
         const embeddingStr = '[' + embedding.values + ']';
 
         const res = await client.query(
-            "SELECT product_name, product_description, retail_price, discounted_price, 1 - (category_embed <=> $1) as similarity " +
-            "FROM Products WHERE 1 - (category_embed <=> $1) > $2 ORDER BY category_embed <=> $1 LIMIT $3",
+            "SELECT name, description, price, offer_price, 1 - (name_embed <=> $1) as similarity " +
+            "FROM Products WHERE 1 - (name_embed <=> $1) > $2 ORDER BY name_embed <=> $1 LIMIT $3",
             [embeddingStr, 0.5, 3]);
         console.log("res.rows: ", res.rows);
 
