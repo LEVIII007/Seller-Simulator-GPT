@@ -24,8 +24,8 @@ model Product {
   brand                 String
   product_description   String
   top_seller            Boolean
-  Category_embed        vector(768)
-  Description_embed     vector(768)
+  Category_embed        Float[]
+  Description_embed     Float[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

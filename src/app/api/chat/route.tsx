@@ -58,7 +58,7 @@ export async function POST(req: Request) {
         }
       },
       askForConfirmation: {
-        description: 'Ask the user for confirmation.',
+        description: 'Ask the user for confirmation. This can be used to confirm an action before proceeding. after user confirm the action,give user some response',
         parameters: z.object({
           message: z.string().describe('The message to ask for confirmation.'),
         }),
