@@ -10,20 +10,7 @@ import { Message, useChat } from "ai/react";
 export default function Chat() {
   const { messages, input, handleInputChange, handleSubmit, addToolResult } =
     useChat({
-      maxToolRoundtrips: 5,
-
-      // run client-side tools that are automatically executed:
-      async onToolCall({ toolCall }) {
-        if (toolCall.toolName === "getLocation") {
-          const cities = [
-            "New York",
-            "Los Angeles",
-            "Chicago",
-            "San Francisco",
-          ];
-          return cities[Math.floor(Math.random() * cities.length)];
-        }
-      },
+      maxToolRoundtrips: 10,
     });
   const [mic, setMic] = useState(false);
   return (
