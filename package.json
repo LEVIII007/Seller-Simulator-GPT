@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@ai-sdk/openai": "^0.0.48",
+    "@google/generative-ai": "^0.17.0",
     "@prisma/client": "^5.18.0",
     "@radix-ui/react-avatar": "^1.1.0",
     "@radix-ui/react-slot": "^1.1.0",
@@ -18,7 +19,9 @@
     "clsx": "^2.1.1",
     "framer-motion": "^11.3.28",
     "lucide-react": "^0.428.0",
+    "mathjs": "^13.0.3",
     "next": "14.2.5",
+    "pg": "^8.12.0",
     "react": "^18",
     "react-dom": "^18",
     "tailwind-merge": "^2.5.2",
