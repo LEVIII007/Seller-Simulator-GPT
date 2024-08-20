@@ -1,7 +1,9 @@
 "use client";
-
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import Image from "next/image";
+import { Mic, MicOff } from "lucide-react";
+import { useState } from "react";
+import MyComponent from "./_components/greeting";
 import { ToolInvocation } from "ai";
 import { Message, useChat } from "ai/react";
 
@@ -23,56 +25,47 @@ export default function Chat() {
         }
       },
     });
-
+  const [mic, setMic] = useState(false);
   return (
-    <div className="flex flex-col justify-between items-center bg-gray-200 h-[50rem]">
-      <div className="flex flex-col justify-between items-center w-full">
-        {messages?.map((m: Message) => (
-          <div key={m.id} className="flex justify-start gap-8 w-1/2">
-            <strong className="min-w-20">{m.role}:</strong>
-            {m.content}
-            {m.toolInvocations?.map((toolInvocation: ToolInvocation) => {
-              const toolCallId = toolInvocation.toolCallId;
-              const addResult = (result: string) =>
-                addToolResult({ toolCallId, result });
-
-              // render confirmation tool (client-side tool with user interaction)
-              if (toolInvocation.toolName === "askForConfirmation") {
-                return (
-                  <div key={toolCallId}>
-                    {toolInvocation.args.message}
-                    <div>
-                      {"result" in toolInvocation ? (
-                        <b>{toolInvocation.result}</b>
-                      ) : (
-                        <>
-                          <Button onClick={() => addResult("Yes")}>Yes</Button>
-                          <Button onClick={() => addResult("No")}>No</Button>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                );
-              }
-
-              // other tools:
-              return "result" in toolInvocation ? (
-                <div key={toolCallId}>
-                  Tool call {`${toolInvocation.toolName}: `}
-                  {toolInvocation.result}
-                </div>
-              ) : (
-                <div key={toolCallId}>Calling {toolInvocation.toolName}...</div>
-              );
-            })}
-            <br />
-          </div>
-        ))}
-      </div>
-
+    <div className="flex flex-col justify-between items-center  h-[50rem] pt-4">
+      <MyComponent></MyComponent>
+      {mic ? (
+        <Image
+          src="/bot.jpeg"
+          width={500}
+          height={500}
+          className="rounded-full p-4 m-4 shadow-xl shadow-white animate-flicker"
+          alt="Picture of the author"
+        />
+      ) : (
+        <Image
+          src="/bot.jpeg"
+          width={500}
+          height={500}
+          className="rounded-full p-4 m-4 shadow-xl"
+          alt="Picture of the author"
+        />
+      )}
       <form onSubmit={handleSubmit} className="p-5 m-5 w-full px-[28rem]">
-        <div>
-          <Input value={input} onChange={handleInputChange} className="w-full" />
+        <div className="flex justify-between items-center gap-4 border border-white rounded-md px-3 py-1">
+          {mic ? (
+            <Mic
+              size={24}
+              className="text-white rounded-full"
+              onClick={() => setMic(false)}
+            />
+          ) : (
+            <MicOff
+              size={24}
+              className="text-white rounded-full"
+              onClick={() => setMic(true)}
+            />
+          )}
+          <Input
+            value={input}
+            onChange={handleInputChange}
+            className="w-full border-none focus:outline-none focus:ring-0 text-xl"
+          />
         </div>
       </form>
     </div>
