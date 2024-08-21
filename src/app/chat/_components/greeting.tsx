@@ -12,7 +12,8 @@ const MyComponent = () => {
     "Welcome to TechGear & Beyond!",
     "Your one-stop shop for all things electronics.",
     "We offer a wide range of products including:",
-    "• TVs, laptops, and PCs, smartwatches, and smartphones",
+    "• TVs, laptops, and PCs",
+    "• Other electronic gadgets and accessories",
     "How can I help you find the perfect electronics for your needs today?",
   ];
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
