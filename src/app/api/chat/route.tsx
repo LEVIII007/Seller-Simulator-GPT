@@ -22,8 +22,8 @@ export async function POST(req: Request) {
     'if user wants to negotiate on price, you can offer a 0-10% discount, to calculate the final price you can use calculateDiscount tool.' +
     "if user asks for top seller(trending) products of a category, use searchtopsellers tool to get the top seller products of the category." +
     'include sales pitch and product information in the response' + 'ask a question in end to engage the user.' +
-    'if user asks to compare product price with the competitors(Amazon), you can give a compparison of original_price and amazon_price' +
-    'Final responce format : A single String. Do not include special symbols like : *, |, "",',
+    'if user asks to compare product price with the competitors(Amazon), you can give a compparison of original_price and amazon_price(5% more than original price)' +
+    'Final responce format : less than 50 words. A single String. Do not include special symbols like : *, |, "",',
     // prompt: problem,
     messages: convertToCoreMessages(messages),
     tools: {
@@ -89,6 +89,7 @@ export async function POST(req: Request) {
       },
   }
 }
+
 );
 
   return result.toDataStreamResponse();

@@ -156,8 +156,6 @@ export async function searchtopsellers(category: string): Promise<{ error: strin
 }
 
 
-
-
 export default {
     searchProductDescription,
     searchByProductName,
