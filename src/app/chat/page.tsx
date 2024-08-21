@@ -11,23 +11,24 @@ import useSpeechSynthesis from "@/components/speechSynthesis";
 
 export default function Chat() {
   const { speak } = useSpeechSynthesis();
-  const { messages, input, handleInputChange, handleSubmit } = useChat({
+  const { messages, input, handleInputChange, handleSubmit, isLoading, stop} = useChat({
     maxToolRoundtrips: 5,
 
     // run client-side tools that are automatically executed:
-    async onToolCall({ toolCall }) {
-      if (toolCall.toolName === "getLocation") {
-        const cities = ["New York", "Los Angeles", "Chicago", "San Francisco"];
-        return cities[Math.floor(Math.random() * cities.length)];
-      }
-    },
   });
 
   const [mic, setMic] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  // const options = [
+  //   "Yes sir, let me check my store for you.",
+  //   "Wait a moment sir,"
+
+  // ]
 
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    // const randomOption = options[Math.floor(Math.random() * options.length)];
+    // speak(randomOption);
     handleSubmit();
   };
 
@@ -35,9 +36,11 @@ export default function Chat() {
     const lastMessage = messages[messages.length - 1];
     if (lastMessage && lastMessage.role === "assistant") {
       setIsSpeaking(true);
+      // console.log(lastMessage)
       speak(lastMessage.content);
     }
   }, [messages]);
+  console.log(messages[messages.length - 1]);
 
   return (
     <div className="flex flex-col justify-between items-center h-[55rem] pt-4">
@@ -50,6 +53,32 @@ export default function Chat() {
         className="rounded-full p-4 m-4 shadow-xl shadow-white animate-flicker"
         alt="Picture of the author"
       />
+
+    {messages.map(message => (
+      <div 
+        key={message.id} 
+        className={`p-4 mb-2 rounded-md ${message.role === 'user' ? 'bg-blue-100 text-blue-900' : 'bg-gray-100 text-gray-900'}`}
+      >
+        <span className="font-semibold">
+          {message.role === 'user' ? 'User: ' : 'AI: '}
+        </span>
+        {message.content}
+      </div>
+    ))}
+
+
+      {isLoading && (
+        <div className="text-center">
+          <p className="font-bold">Processing your request...</p>
+          <button 
+            type="button" 
+            className="bg-white text-black rounded-sm px-4 py-2 mt-2"
+            onClick={() => stop()}
+          >
+            Stop
+          </button>
+        </div>
+      )}
 
       <form onSubmit={handleFormSubmit} className="p-5 m-5 w-full px-[28rem]">
         <div className="flex justify-between items-center gap-4 border border-white rounded-md px-3 py-1">
@@ -70,11 +99,13 @@ export default function Chat() {
             value={input}
             onChange={handleInputChange}
             className="w-full border-none focus:outline-none focus:ring-0 text-xl"
+            disabled={isLoading}
           />
           <SendHorizontal
             size={32}
             className="text-white rounded-full"
             onClick={handleFormSubmit}
+            
           />
         </div>
       </form>
