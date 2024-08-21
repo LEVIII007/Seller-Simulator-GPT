@@ -119,6 +119,7 @@ export default function Chat() {
             value={input}
             onChange={handleInputChange}
             className="w-full border-none focus:outline-none focus:ring-0 text-xl"
+            disabled={isLoading}
           />
           <SendHorizontal
             size={32}

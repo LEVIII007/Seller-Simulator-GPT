@@ -22,6 +22,7 @@ model Product {
   updatedAt         DateTime @updatedAt
   name_embed        Float[]
   description_embed Float[]
+  amazon_price      Float
 
   @@index([name])
   @@index([category])
