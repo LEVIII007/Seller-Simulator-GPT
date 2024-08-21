@@ -1,5 +1,5 @@
 import { openai } from "@ai-sdk/openai";
-import { convertToCoreMessages, streamText } from "ai";
+import { convertToCoreMessages, generateText, streamText } from "ai";
 import { z } from "zod";
 import * as mathjs from "mathjs";
 // import {generateText, tool } from 'ai';
@@ -11,23 +11,24 @@ import {
 } from "./description_embeddings";
 
 // Allow streaming responses up to 30 seconds
-export const maxDuration = 60;
+export const maxDuration = 50;
 
 export async function POST(req: Request) {
   const { messages } = await req.json();
-  console.log(messages);
+  // console.log(messages);
 
   const result = await streamText({
     model: openai("gpt-3.5-turbo"),
     system:
-      "you are a sales person on an online Electronics marketplace which sells television, mobile phones, laptops, smart watches only and you need to sell products listed in database to user, you can show the product information to user, compare different products." +
-      "Final responce format : must sound like a sales person tailored to the user quesiton, based on the user data and product data" +
+      "you are a sales person and an ENTHUSIASTIC tech guy on an online Electronics marketplace which sells television, mobile phones, laptops, smart watches only and you need to sell products listed in database to user, you can show the product information to user, compare different products." +
       "if user asks for discounted price of a product, you can show the discounted price of the product" +
       "if user asks to compare two products which you have suggested, compare laptops and mobile phones on basis of price, RAM, storage, camera quality" +
       "if user wants to negotiate on price, you can offer a 0-10% discount, to calculate the final price you can use calculateDiscount tool." +
-      "if user asks for top seller products of a category, use searchtopsellers tool to get the top seller products of the category." +
+      "if user asks for top seller(trending) products of a category, use searchtopsellers tool to get the top seller products of the category." +
       "include sales pitch and product information in the response" +
-      "ask a question in end to engage the user.",
+      "ask a question in end to engage the user." +
+      "if user asks to compare product price with the competitors(Amazon), you can give a compparison of original_price and amazon_price" +
+      'Final responce format : A single String. Do not include special symbols like : *, |, "",',
     // prompt: problem,
     messages: convertToCoreMessages(messages),
     tools: {
@@ -45,18 +46,18 @@ export async function POST(req: Request) {
         }),
         execute: async ({ prompt }: { prompt: string }): Promise<string> => {
           try {
-            console.log("searchProductDescription called!!!!!!!!!!!!!");
+            // console.log("searchProductDescription called!!!!!!!!!!!!!");
             const result = await searchProductDescription(prompt);
-            console.log("searchProductDescription result: ", result);
+            // console.log("searchProductDescription result: ", result);
             return JSON.stringify(result);
           } catch (error: any) {
             return JSON.stringify({ error: error.message });
           }
         },
       },
-      searchProductCategory: {
+      searchByproductName: {
         description:
-          "Search for a product based of category of product given by user based on a prompt.",
+          "Search for a product based on name of product given by user based on a prompt.",
         parameters: z.object({
           prompt: z
             .string()
@@ -66,19 +67,11 @@ export async function POST(req: Request) {
             .describe("The similarity threshold for matching."),
           matchCnt: z.number().describe("The number of matches to return."),
         }),
-        execute: async ({
-          prompt,
-          matchThreshold,
-          matchCnt,
-        }: {
-          prompt: string;
-          matchThreshold: number;
-          matchCnt: number;
-        }): Promise<string> => {
+        execute: async ({ prompt }: { prompt: string }): Promise<string> => {
           try {
-            console.log("searchProductCategory called!!!!!!!!!!!!!");
+            // console.log("searchProductCategory called!!!!!!!!!!!!!");
             const result = await searchByProductName(prompt);
-            console.log("searchProductCategory result: ", result);
+            // console.log("searchProductCategory result: ", result);
             return JSON.stringify(result);
           } catch (error: any) {
             return JSON.stringify({ error: error.message });
@@ -87,7 +80,7 @@ export async function POST(req: Request) {
       },
       gettop_sellers: {
         description:
-          "Get top sellers of the products of : laptops, television, smartwatch, mobile based on the sales data.",
+          "Get top sellers or trending products of : laptops, television, smartwatch, mobile based on the sales data.",
         parameters: z.object({
           prompt: z
             .string()
@@ -97,9 +90,9 @@ export async function POST(req: Request) {
         }),
         execute: async ({ prompt }: { prompt: string }): Promise<string> => {
           try {
-            console.log("gettop_sellers called!!!!!!!!!!!!!");
+            // console.log("gettop_sellers called!!!!!!!!!!!!!");
             const result = await searchtopsellers(prompt);
-            console.log("gettop_sellers result: ", result);
+            // console.log("gettop_sellers result: ", result);
             return JSON.stringify(result);
           } catch (error: any) {
             return JSON.stringify({ error: error.message });
@@ -116,6 +109,6 @@ export async function POST(req: Request) {
       },
     },
   });
-  // console.log(result);
+
   return result.toDataStreamResponse();
 }
