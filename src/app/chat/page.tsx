@@ -28,11 +28,20 @@ export default function Chat() {
     const lastMessage = messages[messages.length - 1];
     if (lastMessage && lastMessage.role === "assistant") {
       setIsSpeaking(true);
-      speak(lastMessage.content);
+      setTimeout(() => {
+        if (!isLoading) {
+          const content = lastMessage.content;
+          const words = content.split(" "); // Split the content into words
+          const chunkSize = 30;
+          for (let i = 0; i < words.length; i += chunkSize) {
+            const chunk = words.slice(i, i + chunkSize).join(" ");
+            speak(chunk); // Call the speak function for each chunk of 30 words or less
+          }
+        }
+      }, 3000);
     }
   }, [messages]);
   const messagesEndRef = useRef(null);
-
   const scrollToBottom = () => {
     if (messagesEndRef.current) {
       (messagesEndRef.current as HTMLElement).scrollIntoView({
@@ -60,12 +69,11 @@ export default function Chat() {
       <div className="flex flex-col max-w-[50rem] overflow-y-auto hide-scrollbar h-96 px-2 scroll-m-0 m-2">
         <div className="flex flex-col gap-3">
           {messages.map((message) => (
-            <div className=" flex justify-start w-full">
+            <div key={message.id} className=" flex justify-start w-full">
               {/* <div className="font-semibold p-4 mb-2 rounded-md">
                 {message.role === "user" ? "User: " : "AI: "}
               </div> */}
               <div
-                key={message.id}
                 className={`${
                   message.role === "user"
                     ? "bg-slate-700 text-white text-left w-full p-4 rounded-xl"

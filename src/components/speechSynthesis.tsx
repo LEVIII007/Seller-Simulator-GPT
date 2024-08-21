@@ -16,6 +16,7 @@ const useSpeechSynthesis = () => {
       synthInstance.onvoiceschanged = populateVoiceList;
     }
   }, []);
+  let speechQueue: Array<any> = [];
 
   const speak = (text: string) => {
     if (!synth) {
@@ -24,13 +25,24 @@ const useSpeechSynthesis = () => {
     }
 
     if (synth.speaking) {
-      console.warn("SpeechSynthesis is already speaking. Cancelling the current speech.");
-      synth.cancel(); // Cancel the current speech
+      console.warn(
+        "SpeechSynthesis is already speaking. Queuing the new speech."
+      );
+      speechQueue.push(text); // Queue the new speech
     }
-
+    //  else {
+    //   const utterance = new SpeechSynthesisUtterance(text);
+    //   utterance.onend = () => {
+    //     if (speechQueue.length > 0) {
+    //       const nextText = speechQueue.shift(); // Dequeue the next speech
+    //       speak(nextText); // Speak the next speech
+    //     }
+    //   };
+    //   synth.speak(utterance); // Speak the current speech
+    // }
     if (text !== "") {
       const utterThis = new SpeechSynthesisUtterance(text);
-      utterThis.rate = 1;
+      utterThis.rate = 1.2;
       utterThis.pitch = 1;
 
       // Set the voice to "Google UK English Male (en-GB)"
@@ -45,7 +57,16 @@ const useSpeechSynthesis = () => {
       } else {
         console.error("Google UK English Male (en-GB) voice not found");
       }
-
+      // Add event listeners for debugging
+      utterThis.onstart = () => {
+        console.log("Speech started");
+      };
+      utterThis.onend = () => {
+        console.log("Speech ended");
+      };
+      utterThis.onerror = (event) => {
+        console.error("Speech error", event.error);
+      };
       synth.speak(utterThis);
 
       utterThis.onpause = (event) => {
