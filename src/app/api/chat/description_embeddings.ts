@@ -41,11 +41,16 @@ export async function searchProductDescription(
     }
     const embeddingStr = "[" + embedding.values + "]";
 
+    // const res = await client.query(
+    //     "SELECT name, description, original_price, offer_price, 1 - (description_embed <=> $1) as similarity " +
+    //     "FROM Products WHERE 1 - (description_embed <=> $1) > $2 ORDER BY description_embed <=> $1 LIMIT $3",
+    //     [embeddingStr, 0.4, 3]);
     const res = await client.query(
-      "SELECT name, description, price, offer_price, 1 - (description_embed <=> $1) as similarity " +
-        "FROM Products WHERE 1 - (description_embed <=> $1) > $2 ORDER BY description_embed <=> $1 LIMIT $3",
-      [embeddingStr, 0.4, 3]
+      "SELECT name,description, original_price, offer_price, cosine_similarity(description_embed, $1) as similarity " +
+        "FROM Products WHERE cosine_similarity(description_embed, $1) > $2 ORDER BY similarity DESC LIMIT $3",
+      [embedding.values, 0.4, 3]
     );
+    console.log("res.rows: ", res.rows);
 
     let places = [];
 
@@ -53,10 +58,10 @@ export async function searchProductDescription(
       const row = res.rows[i];
 
       places.push({
-        name: row.product_name,
-        description: row.product_description,
-        price: row.retail_price,
-        discount: row.discounted_price,
+        name: row.name,
+        description: row.description,
+        price: row.original_price,
+        discount: row.price,
       });
 
       console.log("\n\n--------------------------------------------------");
@@ -99,10 +104,12 @@ export async function searchByProductName(
     const embeddingStr = "[" + embedding.values + "]";
 
     const res = await client.query(
-      "SELECT name, description, price, offer_price, 1 - (name_embed <=> $1) as similarity " +
-        "FROM Products WHERE 1 - (name_embed <=> $1) > $2 ORDER BY name_embed <=> $1 LIMIT $3",
-      [embeddingStr, 0.5, 3]
+      "SELECT name,description, original_price, offer_price, cosine_similarity(description_embed, $1) as similarity " +
+        "FROM Products WHERE cosine_similarity(description_embed, $1) > $2 ORDER BY similarity DESC LIMIT $3",
+      [embedding.values, 0.5, 3]
     );
+    console.log("res.rows: ", res.rows);
+
     console.log("res.rows: ", res.rows);
 
     let places = [];
@@ -111,10 +118,10 @@ export async function searchByProductName(
       const row = res.rows[i];
 
       places.push({
-        name: row.product_name,
-        description: row.product_description,
-        price: row.retail_price,
-        discount: row.discounted_price,
+        name: row.name,
+        description: row.description,
+        price: row.original_price,
+        discount: row.offer_price,
       });
 
       console.log("\n\n--------------------------------------------------");
@@ -128,7 +135,50 @@ export async function searchByProductName(
   }
 }
 
+export async function searchtopsellers(
+  category: string
+): Promise<
+  | { error: string }
+  | { name: any; description: any; price: any; discount: any }[]
+> {
+  try {
+    console.log("searchtopsellers called!!!!!!!!!!!!!");
+    const client = new Client(pgEndpoint);
+    console.log("client created!!!!!!!!!!!!!");
+
+    await client.connect();
+    console.log("Connected to Postgres");
+
+    const res = await client.query(
+      "SELECT name, description, original_price, offer_price " +
+        "FROM Products WHERE top_seller = true AND category = $1 " +
+        "LIMIT $2",
+      [category, 3]
+    );
+
+    let answer = [];
+
+    for (let i = 0; i < res.rows.length; i++) {
+      const row = res.rows[i];
+
+      answer.push({
+        name: row.name,
+        description: row.description,
+        price: row.original_price,
+        discount: row.offer_price,
+      });
+    }
+
+    await client.end();
+    return answer;
+  } catch (error) {
+    console.error("An error occurred:", error);
+    return { error: "An unexpected error occurred" };
+  }
+}
+
 export default {
   searchProductDescription,
   searchByProductName,
+  searchtopsellers,
 };
